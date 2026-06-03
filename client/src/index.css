@@ -3,7 +3,10 @@
 @import "tailwindcss";
 
 *{
-    font-family: "Outfit", sans-serif;
+    --font-outfit: "Outfit", sans-serif;
+    --font-mplus: "M PLUS 1", sans-serif;
+    --font-bevietnam: "Be Vietnam Pro", sans-serif;
+
 }
 
 @theme {

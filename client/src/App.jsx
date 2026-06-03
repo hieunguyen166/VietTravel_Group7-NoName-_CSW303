@@ -1,30 +1,49 @@
-import { useState } from 'react'
-import { Route, Routes, useLocation } from 'react-router-dom'
-import Navbar from './components/Navbar'
-import CarDetails from './pages/CarDetails'
-import Cars from './pages/Cars'
-import Home from './pages/Home'
-import MyBookings from './pages/MyBookings'
+import { Toaster } from 'react-hot-toast';
+import { Route, Routes, useLocation } from 'react-router-dom';
+import Footer from './components/Footer';
+import Login from './components/Login';
+import Navbar from './components/Navbar';
+import { useAppContext } from './context/AppContext';
+import CarDetails from './pages/CarDetails';
+import Cars from './pages/Cars';
+import Home from './pages/Home';
+import MyBookings from './pages/MyBookings';
+import AddCar from './pages/owner/AddCar';
+import Dashboard from './pages/owner/Dashboard';
+import Layout from './pages/owner/Layout';
+import ManageBooking from './pages/owner/ManageBooking';
+import ManageCar from './pages/owner/ManageCar';
 
 const App = () => {
-
-    const [showLogin, setShowLogin] = useState(false)
+    const {showLogin} = useAppContext()
     const isOwnerPath = useLocation().pathname.startsWith('/owner')
 
     return (
-      <>
-        {!isOwnerPath && <Navbar setShowLogin={setShowLogin} />}
-        {/* Other components and routes */}
-        <Routes>
-          <Route path='/' element={<Home />} />
-          {/* Add other routes here */}
-          <Route path='/car-details/:id' element={<CarDetails/>} />
-          <Route path='/cars' element={<Cars />} />
-          <Route path='/my-bookings' element={<MyBookings />} />
-        </Routes>
-      </>
+        <>
+        <Toaster />
+            {/* FIXED: Chỉ giữ lại dòng Login có điều kiện showLogin dưới đây */}
+            {showLogin && <Login/>}
+            
+            {!isOwnerPath && <Navbar/>}
+            
+            <Routes>
+                <Route path='/' element={<Home />} />
+                <Route path='/car-details/:id' element={<CarDetails />} />
+                <Route path='/cars' element={<Cars />} />
+                <Route path='/my-bookings' element={<MyBookings />} />
+                
+                {/* Các route phân hệ Owner */}
+                <Route path='/owner' element={<Layout/>}>
+                    <Route index element={<Dashboard/>}/>
+                    <Route path="add-car" element={<AddCar/>}/>
+                    <Route path="manage-cars" element={<ManageCar/>}/>
+                    <Route path="manage-bookings" element={<ManageBooking/>}/>
+                </Route>
+            </Routes>
+
+            {!isOwnerPath && <Footer />}
+        </>
     )
-  
 }
 
 export default App

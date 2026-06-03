@@ -30,9 +30,11 @@ import location_icon from "./location_icon.svg";
 import location_icon_colored from "./location_icon_colored.svg";
 import logo from "./logo.svg";
 import logo1 from "./logo1.png";
+import logo2 from "./logo2.png";
 import main_car from "./main_car.png";
 import menu_icon from "./menu_icon.svg";
 import search_icon from "./search_icon.svg";
+import shikimori from "./shikimori.jpg";
 import star_icon from "./star_icon.svg";
 import testimonial_image_1 from "./testimonial_image_1.png";
 import testimonial_image_2 from "./testimonial_image_2.png";
@@ -89,7 +91,9 @@ export const assets = {
     car_image3,
     car_image4,
     vf,
-    logo1
+    logo1,
+    logo2,
+    shikimori,
 }
 
 export const menuLinks = [
@@ -107,10 +111,10 @@ export const ownerMenuLinks = [
 
 export const dummyUserData = {
   "_id": "6847f7cab3d8daecdb517095",
-  "name": "GreatStack",
+  "name": "Master Admin",
   "email": "admin@example.com",
   "role": "owner",
-  "image": user_profile,
+  "image": shikimori,
 }
 
 export const dummyCarData = [
@@ -125,8 +129,8 @@ export const dummyCarData = [
         "seating_capacity": 4,
         "fuel_type": "Hybrid",
         "transmission": "Semi-Automatic",
-        "pricePerDay": 300,
-        "location": "New York",
+        "pricePerDay": 3000000,
+        "location": "TP HCM",
         "description": "The BMW X5 is a mid-size luxury SUV produced by BMW. The X5 made its debut in 1999 as the first SUV ever produced by BMW.",
         "isAvaliable": true,
         "createdAt": "2025-04-16T07:26:56.215Z",
@@ -142,8 +146,8 @@ export const dummyCarData = [
         "seating_capacity": 4,
         "fuel_type": "Diesel",
         "transmission": "Manual",
-        "pricePerDay": 130,
-        "location": "Chicago",
+        "pricePerDay": 300000,
+        "location": "TP HCM",
         "description": "The Toyota Corolla is a mid-size luxury sedan produced by Toyota. The Corolla made its debut in 2008 as the first sedan ever produced by Toyota.",
         "isAvaliable": true,
         "createdAt": "2025-04-16T08:33:57.993Z",
@@ -159,8 +163,8 @@ export const dummyCarData = [
         "seating_capacity": 4,
         "fuel_type": "Hybrid",
         "transmission": "Automatic",
-        "pricePerDay": 200,
-        "location": "Los Angeles",
+        "pricePerDay": 500000,
+        "location": "Vũng Tàu",
         "description": "The Jeep Wrangler is a mid-size luxury SUV produced by Jeep. The Wrangler made its debut in 2003 as the first SUV ever produced by Jeep.",
         "isAvaliable": true,
         "createdAt": "2025-04-16T08:34:39.592Z",
@@ -176,8 +180,8 @@ export const dummyCarData = [
         "seating_capacity": 2,
         "fuel_type": "Diesel",
         "transmission": "Semi-Automatic",
-        "pricePerDay": 209,
-        "location": "Houston",
+        "pricePerDay": 209000,
+        "location": "Bình Dương",
         "description": "This is a mid-size luxury sedan produced by Toyota. The Corolla made its debut in 2008 as the first sedan ever produced by Toyota.",
         "isAvaliable": true,
         "createdAt": "2025-04-17T06:15:47.318Z",
@@ -193,7 +197,7 @@ export const dummyMyBookingsData = [
         "pickupDate": "2025-06-13T00:00:00.000Z",
         "returnDate": "2025-06-14T00:00:00.000Z",
         "status": "confirmed",
-        "price": 440,
+        "price": 4400000,
         "createdAt": "2025-06-10T12:57:48.244Z",
     },
     {
@@ -204,7 +208,7 @@ export const dummyMyBookingsData = [
         "pickupDate": "2025-06-12T00:00:00.000Z",
         "returnDate": "2025-06-12T00:00:00.000Z",
         "status": "pending",
-        "price": 130,
+        "price": 1300000,
         "createdAt": "2025-06-10T12:57:25.613Z",
     },
     {
@@ -215,7 +219,7 @@ export const dummyMyBookingsData = [
         "pickupDate": "2025-06-11T00:00:00.000Z",
         "returnDate": "2025-06-12T00:00:00.000Z",
         "status": "pending",
-        "price": 600,
+        "price": 600000,
         "createdAt": "2025-06-10T09:55:06.379Z",
     },
     {
@@ -226,7 +230,7 @@ export const dummyMyBookingsData = [
         "pickupDate": "2025-06-11T00:00:00.000Z",
         "returnDate": "2025-06-12T00:00:00.000Z",
         "status": "confirmed",
-        "price": 440,
+        "price": 4400000,
         "createdAt": "2025-06-10T09:44:25.410Z",
     }
 ]
@@ -240,5 +244,5 @@ export const dummyDashboardData = {
         dummyMyBookingsData[0],
         dummyMyBookingsData[1]
     ],
-    "monthlyRevenue": 840
+    "monthlyRevenue": 8400000
 }
