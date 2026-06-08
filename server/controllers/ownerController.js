@@ -1,7 +1,7 @@
 import fs from 'fs';
 import mongoose from "mongoose";
 import imagekit from "../configs/imageKit.js";
-import Booking from "../models/Booking.js";
+import Booking from "../models/booking.js";
 import Car from "../models/Car.js";
 import User from "../models/User.js";
 export const changeRoleToOwner = async (req, res) => {
