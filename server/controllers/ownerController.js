@@ -1,4 +1,3 @@
-import fs from 'fs';
 import mongoose from "mongoose";
 import imagekit from "../configs/imageKit.js";
 import Booking from "../models/booking.js";
@@ -19,7 +18,7 @@ export const changeRoleToOwner = async (req, res) => {
 //API to list car
 
 export const addCar = async (req, res) => {
-    console.log("--- BẠN ĐANG CHẠY CODE PHIÊN BẢN ĐÃ SỬA LỖI ---");
+    console.log("--- BẠN ĐANG CHẠY CODE PHIÊN BẢN ĐÃ SỬA LỖI BUFFER ---");
     try {
         const { _id } = req.user;
         const carData = JSON.parse(req.body.carData);
@@ -29,10 +28,9 @@ export const addCar = async (req, res) => {
             return res.json({ success: false, message: "Vui lòng chọn hình ảnh xe" });
         }
 
-        // 1. Upload ảnh lên ImageKit
-        const fileBuffer = fs.readFileSync(imageFile.path);
+        // 1. ✅ ĐÃ SỬA: Upload ảnh lên ImageKit bằng dữ liệu Buffer trực tiếp từ RAM (Bỏ fs.readFileSync)
         const response = await imagekit.upload({
-            file: fileBuffer,
+            file: imageFile.buffer.toString('base64'), // Chuyển buffer sang dạng chuỗi base64
             fileName: imageFile.originalname,
             folder: '/cars'
         });
@@ -64,7 +62,7 @@ export const addCar = async (req, res) => {
             lat: carData.lat,
             lng: carData.lng,
             isAvailable: true,
-            city: carData.city // ✅ ĐÃ SỬA: Lấy đúng biến city từ form gửi lên
+            city: carData.city 
         });
 
         res.json({ success: true, message: "Xe đã được thêm thành công", car: newCar });
@@ -207,7 +205,7 @@ export const updateUserImage = async (req, res)=>{
     try {
         const { _id } = req.user;
 
-        // FIX: Lấy file từ req.file do Multer xử lý và gán vào biến imageFile
+        // Lấy file từ req.file do Multer xử lý và gán vào biến imageFile
         const imageFile = req.file;
 
         // Kiểm tra xem người dùng có thực sự upload ảnh lên không
@@ -215,9 +213,9 @@ export const updateUserImage = async (req, res)=>{
             return res.json({ success: false, message: "Không có ảnh nào được tải lên" });
         }
 
-        const fileBuffer = fs.readFileSync(imageFile.path);
+        // ✅ ĐÃ SỬA: Upload ảnh lên ImageKit trực tiếp bằng Buffer từ RAM (Bỏ hoàn toàn fs.readFileSync)
         const response = await imagekit.upload({
-            file: fileBuffer,
+            file: imageFile.buffer.toString('base64'),
             fileName: imageFile.originalname,
             folder: '/users'
         });
