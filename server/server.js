@@ -22,7 +22,7 @@ app.use((req, res, next) => {
 });
 
 // 🛠️ SỬA CƠ CHẾ KẾT NỐI DB: Chạy trực tiếp ở luồng chính (Tối ưu cho Serverless)
-mongoose.set('bufferCommands', false);
+//mongoose.set('bufferCommands', false);
 connectDB()
     .then(() => console.log("READY STATE:", mongoose.connection.readyState))
     .catch((err) => console.log("Lỗi kết nối DB ban đầu:", err.message));

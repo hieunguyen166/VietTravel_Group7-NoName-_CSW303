@@ -3,6 +3,7 @@ import fs from 'fs';
 import ImageKit from "imagekit";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import connectDB from "../configs/db.js";
 import Car from "../models/Car.js";
 import User from "../models/User.js";
 const imagekit = new ImageKit({
@@ -86,13 +87,28 @@ export const getUserData = async (req, res) =>{
 }
 
 // Get All Cars for the frontend
-export const getCars = async (req, res) =>{
+export const getCars = async (req, res) => {
     try {
-        const cars = await Car.find({isAvailable: true}).populate('owner', 'name phone email');
-        res.json({success: true, cars})
+
+        await connectDB();
+
+        const cars = await Car.find({
+            isAvailable: true
+        }).populate('owner', 'name phone email');
+
+        res.json({
+            success: true,
+            cars
+        });
+
     } catch (error) {
-        console.log(error.message);
-        res.json({success: false, message: error.message})
+
+        console.log(error);
+
+        res.json({
+            success: false,
+            message: error.message
+        });
     }
 }
 
