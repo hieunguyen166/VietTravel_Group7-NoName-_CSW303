@@ -1,4 +1,4 @@
-import Booking from '../models/Booking.js';
+import Booking from '../models/booking.js';
 import Review from '../models/Review.js';
 
 // Hàm 1: Thêm đánh giá mới (Bạn đã có)
