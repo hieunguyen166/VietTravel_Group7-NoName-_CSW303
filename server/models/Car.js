@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-const { ObjectId } = mongoose.Schema.Types
+const { ObjectId } = mongoose.Schema.Types;
 
 const carSchema = new mongoose.Schema({
     owner: { type: ObjectId, ref: 'User' },
@@ -14,15 +14,11 @@ const carSchema = new mongoose.Schema({
     pricePerDay: { type: Number, required: true },
     location: { type: String, required: true },
     description: { type: String, required: true },
-    
-    // Tọa độ địa lý
-    lat: { type: Number, default: 10.0452 }, 
-    lng: { type: Number, default: 105.7469 }, 
-    
-    // CHỈ GIỮ LẠI 1 TRƯỜNG DUY NHẤT
-    isAvailable: { type: Boolean, default: true }
-}, { timestamps: true })
+    lat: { type: Number, required: true }, 
+    lng: { type: Number, required: true }, 
+    isAvailable: { type: Boolean, default: true },
+    city: { type: String, required: true },
+}, { timestamps: true });
 
-const Car = mongoose.model('Car', carSchema)
-
+const Car = mongoose.model('Car', carSchema);
 export default Car;

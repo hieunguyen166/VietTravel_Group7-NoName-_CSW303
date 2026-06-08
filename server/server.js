@@ -6,22 +6,28 @@ import mongoose from "mongoose";
 import connectDB from './configs/db.js';
 import bookingRouter from './routes/bookingRoutes.js';
 import ownerRoutes from './routes/ownerRoute.js';
+import reviewRoutes from './routes/reviewRoutes.js';
 import userRoutes from './routes/userRoutes.js';
-
 const app = express();
 
 app.use(cors());
 app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
 
-// 3. NẠP ĐỊNH TUYẾN API
+
+
+// PHẢI ĐẶT MIDDLEWARE LOG TRƯỚC TẤT CẢ CÁC ROUTE ĐỂ BẮT MỌI REQUEST
+app.use((req, res, next) => {
+    console.log(`Request nhận được: ${req.method} ${req.url}`);
+    next();
+});
+
+// NẠP TẤT CẢ ROUTE
 app.use('/api/user', userRoutes);
 app.use('/api/owner', ownerRoutes);
 app.use('/api/bookings', bookingRouter);
+app.use('/api/review', reviewRoutes);
 
-// 4. Đường dẫn kiểm tra nhanh hệ thống
-app.get('/', (req, res) => {
-    res.send("API đang hoạt động!");
-}); 
 
 const PORT = process.env.PORT || 3000;
 mongoose.set('bufferCommands', false);
@@ -41,4 +47,6 @@ const uploadDir = './uploads';
 if (!fs.existsSync(uploadDir)){
     fs.mkdirSync(uploadDir, { recursive: true });
 }
+
+
 startServer();

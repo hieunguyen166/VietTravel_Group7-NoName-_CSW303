@@ -34,6 +34,7 @@ const Cars = () => {
 
 
 
+
   const {cars, axios} = useAppContext();
 
 
@@ -86,8 +87,9 @@ const Cars = () => {
 
         (car.pricePerDay && car.pricePerDay.toString().includes(searchKey)) ||
 
-        (car.location && car.location.toLowerCase().includes(searchKey))
+        (car.location && car.location.toLowerCase().includes(searchKey)) ||
 
+        (car.city && car.city.toLowerCase().includes(searchKey))
       );
 
     });
@@ -143,7 +145,7 @@ const Cars = () => {
 
 
     useEffect(() => {
-
+      console.log("Tổng số xe nhận từ Context:", cars.length);
       cars.length > 0 && !isSearchData && applyFillter();
 
     },[input, cars]);

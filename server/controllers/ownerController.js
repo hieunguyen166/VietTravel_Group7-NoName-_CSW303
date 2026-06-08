@@ -1,9 +1,9 @@
 import fs from 'fs';
+import mongoose from "mongoose";
 import imagekit from "../configs/imageKit.js";
 import Car from "../models/Car.js";
 import User from "../models/User.js";
 import Booking from "../models/booking.js";
-
 export const changeRoleToOwner = async (req, res) => {
     try {
         const {_id} = req.user;
@@ -19,38 +19,60 @@ export const changeRoleToOwner = async (req, res) => {
 //API to list car
 
 export const addCar = async (req, res) => {
-    try {
-        const {_id} = req.user;
-        let car = JSON.parse(req.body.carData);
-        const imageFile = req.file; // Lấy file ảnh từ middleware multer
+    console.log("--- BẠN ĐANG CHẠY CODE PHIÊN BẢN ĐÃ SỬA LỖI ---");
+    try {
+        const { _id } = req.user;
+        const carData = JSON.parse(req.body.carData);
+        const imageFile = req.file;
 
-        // Đọc file ảnh và tải lên ImageKit
-        const fileBuffer = fs.readFileSync(imageFile.path);
-        const response = await imagekit.upload({
-            file: fileBuffer,
-            fileName: imageFile.originalname,
-            folder: '/cars'
-        });
+        if (!imageFile) {
+            return res.json({ success: false, message: "Vui lòng chọn hình ảnh xe" });
+        }
 
-        // optimization through imagekit URL transformation
-        var optimizedImageUrl = imagekit.url({
-            path : response.filePath,
-            transformation : [
-                {width: '1280'}, // Width resizing
-                {quality: 'auto'}, // Auto compression
-                {format: 'webp' } // Convert to modern format
-            ]
-        });
+        // 1. Upload ảnh lên ImageKit
+        const fileBuffer = fs.readFileSync(imageFile.path);
+        const response = await imagekit.upload({
+            file: fileBuffer,
+            fileName: imageFile.originalname,
+            folder: '/cars'
+        });
 
-        const image = optimizedImageUrl;
-        await Car.create({...car, owner: _id, image});
+        // 2. Tạo biến optimizedImageUrl ngay tại đây (cùng phạm vi)
+        const optimizedImageUrl = imagekit.url({
+            path: response.filePath,
+            transformation: [
+                { width: '1280' },
+                { quality: 'auto' },
+                { format: 'webp' }
+            ]
+        });
 
-        res.json({success: true, message: "Xe đã được thêm thành công"})
+        // 3. Tạo xe trong Database
+        const newCar = await Car.create({
+            owner: _id,
+            image: optimizedImageUrl,
+            brand: carData.brand,
+            model: carData.model,
+            year: carData.year,
+            category: carData.category,
+            seating_capacity: carData.seating_capacity,
+            fuel_type: carData.fuel_type,
+            transmission: carData.transmission,
+            pricePerDay: carData.pricePerDay,
+            location: carData.location,
+            description: carData.description,
+            lat: carData.lat,
+            lng: carData.lng,
+            isAvailable: true,
+            city: carData.city // ✅ ĐÃ SỬA: Lấy đúng biến city từ form gửi lên
+        });
 
-    }catch (error) {
-        console.log(error.message);
-        res.json({success: false, message: error.message})
-    }
+        res.json({ success: true, message: "Xe đã được thêm thành công", car: newCar });
+
+    } catch (error) {
+        console.error("LỖI HỆ THỐNG:", error);
+        res.json({ success: false, message: error.message });
+    }
 }
 
 
@@ -136,36 +158,49 @@ export const getDashboardData = async (req, res) => {
     try {
         const { _id, role } = req.user;
 
-        if(role !== 'owner'){
+        if (role !== 'owner') {
             return res.json({ success: false, message: "Không có quyền truy cập" });
         }
 
-        const cars = await Car.find({owner: _id})
-        const bookings = await Booking.find({owner: _id}).populate('car').sort({createdAt: -1});
+        // Lấy tất cả dữ liệu một lần thay vì truy vấn nhiều lần vào DB
+        const cars = await Car.find({ owner: _id });
+        const bookings = await Booking.find({ owner: _id }).populate('car').sort({ createdAt: -1 });
 
-        // 🛠️ SỬA TẠI ĐÂY: Đổi chuỗi filter sang đúng enum Tiếng Việt trong DB để đếm chính xác
-        const pendingBookings = await Booking.find({owner: _id, status: "Đang chờ xác nhận"})
-        const completedBookings = await Booking.find({owner: _id, status: "Đã xác nhận"})
+        // Sử dụng mảng bookings đã có để lọc, giúp giảm tải cho database
+        const pendingBookings = bookings.filter(b => b.status === "Đang chờ xác nhận");
+        const completedBookings = bookings.filter(b => b.status === "Đã xác nhận");
 
-        // 🛠️ SỬA TẠI ĐÂY: Đồng bộ bộ lọc tính doanh thu từ các đơn "Đã xác nhận"
-        const monthlyRevenue = bookings.slice().filter(booking => booking.status === "Đã xác nhận").reduce((acc, booking) => acc + booking.price, 0);
+        // Tính toán doanh thu chi tiết
+        // Tổng doanh thu từ các đơn đã xác nhận (bất kể phương thức thanh toán)
+        const monthlyRevenue = completedBookings.reduce((acc, booking) => acc + booking.price, 0);
+
+        // Doanh thu tách riêng theo phương thức thanh toán
+        const cashRevenue = completedBookings
+            .filter(b => b.paymentMethod === 'Cash')
+            .reduce((acc, b) => acc + b.price, 0);
+
+        const vnpayRevenue = completedBookings
+            .filter(b => b.paymentMethod === 'VNPAY')
+            .reduce((acc, b) => acc + b.price, 0);
 
         const dashboardData = {
             totalCars: cars.length,
             totalBookings: bookings.length,
             pendingBookings: pendingBookings.length,
             completedBookings: completedBookings.length,
-            recentBookings: bookings.slice(0, 5), // Get the 5 most recent bookings
-            monthlyRevenue
-        }
+            recentBookings: bookings.slice(0, 5),
+            monthlyRevenue,
+            cashRevenue,   // Đã thêm
+            vnpayRevenue   // Đã thêm
+        };
 
-        res.json({success: true, dashboardData});
+        res.json({ success: true, dashboardData });
 
     } catch (error) {
         console.log(error.message);
-        res.json({success: false, message: error.message})
+        res.json({ success: false, message: error.message });
     }
-}
+};
 
 // API to update user image
 export const updateUserImage = async (req, res)=>{
@@ -206,3 +241,23 @@ export const updateUserImage = async (req, res)=>{
         res.json({success: false, message: error.message})
     }
 }
+
+// Thêm vào ownerController.js
+export const getOwnerProfile = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Kiểm tra xem ID có đúng định dạng MongoDB không
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.json({ success: false, message: "ID không hợp lệ" });
+        }
+
+        const owner = await User.findById(id).select("-password");
+        if (!owner) {
+            return res.json({ success: false, message: "Không tìm thấy chủ xe" });
+        }
+        res.json({ success: true, owner });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};

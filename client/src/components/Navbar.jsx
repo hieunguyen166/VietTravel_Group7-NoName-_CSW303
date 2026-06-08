@@ -84,13 +84,46 @@ const Navbar = () => {
                         {isOwner ? 'Dashboard' : 'Danh sách xe' }
                     </button>
                     
-                    {/* Nút Đăng nhập: font-mplus viết hoa dứt khoát kết hợp phủ màu #115E59 thẫm, hover sang #0D9488 */}
-                    <button 
-                        onClick={() => {user ? logout() : setShowLogin(true)}} 
-                        className="cursor-pointer px-7 py-2 bg-[#115E59] hover:bg-[#0D9488] transition-all duration-300 text-white rounded-lg font-mplus font-bold text-sm tracking-wider uppercase shadow-md shadow-teal-900/5 active:scale-98 max-sm:w-full text-center"
-                    >
-                        {user ? 'Logout' : 'Đăng nhập'}
-                    </button>
+                    {/* 🆕 KHU VỰC ĐÃ ĐƯỢC TÁCH BIỆT LOGIC ĐĂNG NHẬP / THÔNG TIN CÁ NHÂN */}
+                    {user ? (
+                        <div className="flex items-center gap-4 max-sm:flex-col max-sm:items-start max-sm:w-full max-sm:border-t max-sm:pt-4 max-sm:border-gray-200">
+                            
+                            {/* Khối link Avatar + Tên dẫn đến trang cá nhân */}
+                            <Link 
+                                to="/profile" 
+                                onClick={() => setOpen(false)} // Tự đóng menu mobile khi click
+                                className="flex items-center gap-2 group cursor-pointer"
+                            >
+                                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-transparent group-hover:border-[#115E59] transition-all bg-gray-100 shadow-sm">
+                                    <img 
+                                        src={user.image || "https://cdn-icons-png.flaticon.com/512/3177/3177440.png"} 
+                                        alt="Avatar" 
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <span className="font-mplus font-bold text-[14px] text-gray-700 group-hover:text-[#115E59] transition-colors tracking-tight">
+                                    {user.name}
+                                </span>
+                            </Link>
+
+                            {/* Nút đăng xuất tinh gọn, sang trọng hơn khi đã login */}
+                            <button 
+                                onClick={() => { logout(); setOpen(false); }} 
+                                className="cursor-pointer px-4 py-1.5 border border-gray-300 hover:border-red-500 text-gray-500 hover:text-red-500 transition-all duration-300 rounded-lg font-mplus font-bold text-xs tracking-wider uppercase active:scale-95 max-sm:w-full text-center"
+                            >
+                                Logout
+                            </button>
+
+                        </div>
+                    ) : (
+                        /* Nút Đăng nhập nguyên bản của bạn khi chưa đăng nhập */
+                        <button 
+                            onClick={() => { setShowLogin(true); setOpen(false); }} 
+                            className="cursor-pointer px-7 py-2 bg-[#115E59] hover:bg-[#0D9488] transition-all duration-300 text-white rounded-lg font-mplus font-bold text-sm tracking-wider uppercase shadow-md shadow-teal-900/5 active:scale-98 max-sm:w-full text-center"
+                        >
+                            Đăng nhập
+                        </button>
+                    )}
                 </div>
             </div>
 

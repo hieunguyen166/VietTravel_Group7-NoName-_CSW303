@@ -1,7 +1,6 @@
 import Booking from "../models/booking.js";
 import Car from "../models/Car.js";
 
-
 // Function to Check Availability of Car for a given Date
 const checkAvailability = async (car, pickupDate, returnDate)=>{
     const bookings = await Booking.find({
@@ -17,8 +16,10 @@ export const checkAvailabilityOfCar = async (req, res)=>{
     try {
         const {location, pickupDate, returnDate} = req.body
 
-        // fetch all available cars for the given location
-        const cars = await Car.find({location, isAvaliable: true})
+        // 🛠️ ĐÃ SỬA: 
+        // 1. Chuyển sang tìm kiếm theo cột "city" (city: location)
+        // 2. Sửa lại đúng chính tả biến "isAvailable"
+        const cars = await Car.find({ city: location, isAvailable: true })
 
         // FIX TẠI ĐÂY: Thêm tham số (car) vào trong arrow function của map
         const availableCarsPromises = cars.map(async (car)=>{ 
@@ -38,34 +39,51 @@ export const checkAvailabilityOfCar = async (req, res)=>{
 }
 
 // API to create a booking
-export const createBooking = async (req, res)=>{
+export const createBooking = async (req, res) => {
     try {
         const { _id } = req.user;
-        const { car, pickupDate, returnDate } = req.body;
+        // Thêm paymentMethod từ req.body
+        const { car, pickupDate, returnDate, paymentMethod } = req.body;
 
-        const isAvailable = await checkAvailability(car, pickupDate, returnDate)
-            if(!isAvailable){
-                return res.json({success: false, message: "Xe đã được đặt trong khoảng thời gian này. Vui lòng chọn ngày khác hoặc xe khác."})
-            }
-
-        const carData = await Car.findById(car)
-        
-        // 🛠️ FIX TẠI ĐÂY: Kiểm tra nếu xe cũ trong DB không có trường owner thì báo lỗi ngay lập tức
-        if (!carData || !carData.owner) {
-            return res.json({success: false, message: "Thông tin chủ xe không tồn tại. Vui lòng thử lại với xe khác."})
+        const isAvailable = await checkAvailability(car, pickupDate, returnDate);
+        if (!isAvailable) {
+            return res.json({ success: false, message: "Xe đã được đặt trong khoảng thời gian này. Vui lòng chọn ngày khác hoặc xe khác." });
         }
 
-        // Calculate price based on Pickup and Return Date
+        const carData = await Car.findById(car);
+        
+        if (!carData || !carData.owner) {
+            return res.json({ success: false, message: "Thông tin chủ xe không tồn tại." });
+        }
+
         const picked = new Date(pickupDate);
         const returned = new Date(returnDate);
         const noOfDays = Math.ceil((returned - picked) / (1000 * 60 * 60 * 24));
         const price = carData.pricePerDay * noOfDays;
 
-        await Booking.create({car, owner: carData.owner, user: _id, pickupDate, returnDate, price});
-        res.json({success: true, message: "Đặt xe thành công! Bạn có thể xem chi tiết đặt xe trong mục 'Đơn hàng của tôi'."})
+        // Lưu đơn hàng với trạng thái tương ứng
+        await Booking.create({
+            car, 
+            owner: carData.owner, 
+            user: _id, 
+            pickupDate, 
+            returnDate, 
+            price,
+            paymentMethod: paymentMethod || 'Cash', // Mặc định là Cash nếu không gửi lên
+            // Nếu là VNPAY thì chờ thanh toán, nếu là Cash thì chờ xác nhận của chủ xe
+            status: paymentMethod === 'VNPAY' ? 'Chờ thanh toán' : 'Đang chờ xác nhận',
+            isPaid: false
+        });
+
+        res.json({ 
+            success: true, 
+            message: paymentMethod === 'VNPAY' 
+                ? "Đơn hàng đã được tạo. Vui lòng hoàn tất thanh toán!" 
+                : "Đặt xe thành công! Bạn có thể xem chi tiết trong mục 'Đơn hàng của tôi'." 
+        });
     } catch (error) {
         console.log(error.message);
-        res.json({success: false, message: error.message})
+        res.json({ success: false, message: error.message });
     }
 }
 
@@ -84,17 +102,22 @@ export const getUserBookings = async (req, res)=>{
 }
 
 // API to get Owner's Bookings
-export const getOwnerBookings = async (req, res)=>{
+export const getOwnerBookings = async (req, res) => {
     try {
-        if(req.user.role !== 'owner'){
-            return res.json({ success: false, message: "Không có quyền truy cập" })
+        if (req.user.role !== 'owner') {
+            return res.json({ success: false, message: "Không có quyền truy cập" });
         }
-        const bookings = await Booking.find({owner: req.user._id}).populate
-        ('car user').select("-user.password").sort({createdAt: -1 })
-        res.json({success: true, bookings})
+
+        // Lấy danh sách booking và lấy kèm thông tin car + user
+        const bookings = await Booking.find({ owner: req.user._id })
+            .populate('car') 
+            .populate('user', 'name email address phone driverLicense') // CHỈ lấy các trường công khai của user
+            .sort({ createdAt: -1 });
+
+        res.json({ success: true, bookings });
     } catch (error) {
         console.log(error.message);
-        res.json({success: false, message: error.message})
+        res.json({ success: false, message: error.message });
     }
 }
 
@@ -117,5 +140,64 @@ export const changeBookingStatus = async (req, res)=>{
     } catch (error) {
         console.log(error.message);
         res.json({success: false, message: error.message})
+    }
+}
+
+// API to generate Fake VNPAY QR
+export const generateVnpayQR = async (req, res) => {
+    try {
+        const { amount, orderId } = req.body;
+        // Đây là URL ảnh QR code giả lập, bạn có thể thay bằng link ảnh thật
+        const qrImageUrl = `https://api.vietqr.io/image/970415-0000000000-qRz5vYk.jpg?amount=${amount}&addInfo=ThanhToanDonHang${orderId}`;
+        
+        res.json({ 
+            success: true, 
+            qrCode: qrImageUrl,
+            message: "Vui lòng quét mã để thanh toán" 
+        });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+}
+
+// Thêm API này vào bookingController.js
+export const getUserBookingHistory = async (req, res) => {
+    try {
+        // Lấy ID từ user đã được xác thực bởi middleware 'protect'
+        const userId = req.params.userId; 
+
+        const history = await Booking.find({ user: userId })
+            .populate('car', 'brand model image')
+            .sort({ createdAt: -1 });
+
+        res.json({ success: true, history });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+}
+
+// API to get all booked dates for a specific car
+export const getBookedDates = async (req, res) => {
+    try {
+        console.log("Đã nhận request cho xe:", req.params.carId);
+        const { carId } = req.params;
+        
+        // Kiểm tra xem ID có hợp lệ không
+        if (!carId) return res.status(400).json({ success: false, message: "Thiếu ID xe" });
+
+        const bookings = await Booking.find({ 
+            car: carId, 
+            status: { $ne: 'Đã hủy' } 
+        });
+        
+        const bookedIntervals = bookings.map(b => ({
+            start: b.pickupDate,
+            end: b.returnDate
+        }));
+        
+        res.json({ success: true, bookedIntervals });
+    } catch (error) {
+        console.error("LỖI DB:", error); // Log lỗi cụ thể ra terminal
+        res.status(500).json({ success: false, message: error.message });
     }
 }

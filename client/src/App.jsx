@@ -13,6 +13,7 @@ import Dashboard from './pages/owner/Dashboard';
 import Layout from './pages/owner/Layout';
 import ManageBooking from './pages/owner/ManageBooking';
 import ManageCar from './pages/owner/ManageCar';
+import UserProfile from './pages/UserProfile';
 
 const App = () => {
     const {showLogin} = useAppContext()
@@ -31,7 +32,7 @@ const App = () => {
                 <Route path='/car-details/:id' element={<CarDetails />} />
                 <Route path='/cars' element={<Cars />} />
                 <Route path='/my-bookings' element={<MyBookings />} />
-                
+                <Route path='/profile' element={<UserProfile />} />
                 {/* Các route phân hệ Owner */}
                 <Route path='/owner' element={<Layout/>}>
                     <Route index element={<Dashboard/>}/>

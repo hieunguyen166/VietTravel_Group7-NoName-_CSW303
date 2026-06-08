@@ -65,7 +65,7 @@ export const AppProvider = ({ children })=>{
     // useEffect to fetch user data when token is available
     useEffect(()=>{
         if(token){
-            axios.defaults.headers.common['Authorization'] = `${token}`
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
             // Đồng bộ lại token vào localStorage phòng trường hợp setToken được gọi khi đăng nhập
             localStorage.setItem('token', token)
             fetchUser()
