@@ -1,17 +1,9 @@
 import multer from 'multer';
 
-// Cấu hình nơi lưu và tên file
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // Bạn cần tạo sẵn thư mục 'uploads' ở thư mục gốc của project server
-  },
-  filename: function (req, file, cb) {
-    // Tạo tên file duy nhất bằng cách kết hợp thời gian hiện tại + tên gốc
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + '-' + file.originalname);
-  }
-});
+// Sử dụng Memory Storage cho môi trường Serverless của Vercel
+const storage = multer.memoryStorage();
 
 const upload = multer({ storage: storage });
 
+// HỢP NHẤT CÁCH XUẤT: Sử dụng export default ở đây
 export default upload;

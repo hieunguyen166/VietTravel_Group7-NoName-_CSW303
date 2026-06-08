@@ -1,5 +1,4 @@
 import bcrypt from "bcryptjs";
-import fs from 'fs';
 import ImageKit from "imagekit";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
@@ -130,11 +129,12 @@ export const updateUserProfile = async (req, res) => {
             user.markModified('phone');
         }
 
-        // Xử lý ảnh nếu có
+        // Xử lý ảnh bằng Buffer thay vì lưu xuống ổ cứng
         if (req.files) {
             if (req.files['image']?.[0]) {
                 const response = await imagekit.upload({
-                    file: fs.readFileSync(req.files['image'][0].path),
+                    // Dùng trực tiếp buffer dạng string base64 để ImageKit dễ đọc nhất
+                    file: req.files['image'][0].buffer.toString('base64'), 
                     fileName: req.files['image'][0].originalname,
                     folder: '/users'
                 });
@@ -142,7 +142,7 @@ export const updateUserProfile = async (req, res) => {
             }
             if (req.files['driverLicense']?.[0]) {
                 const response = await imagekit.upload({
-                    file: fs.readFileSync(req.files['driverLicense'][0].path),
+                    file: req.files['driverLicense'][0].buffer.toString('base64'),
                     fileName: req.files['driverLicense'][0].originalname,
                     folder: '/users'
                 });
@@ -152,9 +152,7 @@ export const updateUserProfile = async (req, res) => {
 
         await user.save(); 
         
-        // CÁCH CỐ ĐỊNH: Lấy dữ liệu mới nhất từ DB
         return res.json({ success: true, message: "Cập nhật thành công", user: user });
-        
         
     } catch (error) {
         console.log("LỖI CHI TIẾT:", error);
