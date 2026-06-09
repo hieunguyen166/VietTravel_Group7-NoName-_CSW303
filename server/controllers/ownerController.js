@@ -172,18 +172,15 @@ export const getDashboardData = async (req, res) => {
         const pendingBookings = bookings.filter(b => b.status === "Đang chờ xác nhận");
         const completedBookings = bookings.filter(b => b.status === "Đã xác nhận");
 
-        // Tính toán doanh thu chi tiết
-        // Tổng doanh thu từ các đơn đã xác nhận (bất kể phương thức thanh toán)
-        const monthlyRevenue = completedBookings.reduce((acc, booking) => acc + booking.price, 0);
+        // Tính toán doanh thu thực nhận (Net Revenue) của chủ xe
+const calculateOwnerShare = (bookings) => {
+    return bookings.reduce((acc, b) => acc + (b.price * 0.95), 0);
+};
 
-        // Doanh thu tách riêng theo phương thức thanh toán
-        const cashRevenue = completedBookings
-            .filter(b => b.paymentMethod === 'Cash')
-            .reduce((acc, b) => acc + b.price, 0);
-
-        const vnpayRevenue = completedBookings
-            .filter(b => b.paymentMethod === 'VNPAY')
-            .reduce((acc, b) => acc + b.price, 0);
+// Sửa lại các biến doanh thu:
+const monthlyRevenue = calculateOwnerShare(completedBookings);
+const cashRevenue = calculateOwnerShare(completedBookings.filter(b => b.paymentMethod === 'Cash'));
+const vnpayRevenue = calculateOwnerShare(completedBookings.filter(b => b.paymentMethod === 'VNPAY'));
 
         const dashboardData = {
             totalCars: cars.length,
