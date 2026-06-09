@@ -1,6 +1,7 @@
 import Booking from "../models/booking.js";
 import Car from "../models/Car.js";
 import Order from "../models/Order.js";
+import User from "../models/User.js";
 
 // Function to Check Availability of Car for a given Date
 const checkAvailability = async (car, pickupDate, returnDate)=>{
@@ -38,7 +39,7 @@ export const checkAvailabilityOfCar = async (req, res)=>{
         res.json({success: false, message: error.message})
     }
 }
-
+console.log("=== KIỂM TRA IMPORT USER ===", User);
 // API to create a booking
 export const createBooking = async (req, res) => {
     try {
@@ -101,7 +102,11 @@ export const createBooking = async (req, res) => {
                 : "Đặt xe thành công!" 
         });
     } catch (error) {
-        console.error("Lỗi tạo booking:", error); // Dùng console.error để dễ debug
+console.log("=========================================");
+        console.log("THỦ PHẠM GÂY LỖI NẰM Ở ĐÂY:");
+        console.log(error.stack); // Dòng này BẮT BUỘC phải in ra đầy đủ các dòng "at..."
+        console.log("=========================================");
+        
         res.json({ success: false, message: error.message });
     }
 }
