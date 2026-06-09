@@ -45,19 +45,34 @@ export const createBooking = async (req, res) => {
         const { _id } = req.user;
         const { car, pickupDate, returnDate, paymentMethod, driveType } = req.body;
 
+        // 1. Phải lấy dữ liệu User trước khi kiểm tra điều kiện
+        const userData = await User.findById(_id);
+        if (!userData) {
+            return res.json({ success: false, message: "Người dùng không tồn tại." });
+        }
+
         const isAvailable = await checkAvailability(car, pickupDate, returnDate);
         if (!isAvailable) {
             return res.json({ success: false, message: "Xe đã được đặt trong khoảng thời gian này." });
         }
 
         const carData = await Car.findById(car);
+        if (!carData) {
+            return res.json({ success: false, message: "Xe không tồn tại." });
+        }
 
         if (!carData.driveTypes.includes(driveType)) {
             return res.json({ success: false, message: "Hình thức thuê này không khả dụng cho xe này." });
         }
         
-        if (!carData || !carData.owner) {
-            return res.json({ success: false, message: "Thông tin chủ xe không tồn tại." });
+        // 2. Kiểm tra điều kiện CCCD và GPLX
+        if (driveType === 'self-drive') {
+            if (!userData.identifyCode || !userData.driverLicense) {
+                return res.json({ 
+                    success: false, 
+                    message: "Bạn cần cập nhật đủ CCCD và GPLX để thuê xe tự lái." 
+                });
+            }
         }
 
         const picked = new Date(pickupDate);
@@ -65,7 +80,7 @@ export const createBooking = async (req, res) => {
         const noOfDays = Math.ceil((returned - picked) / (1000 * 60 * 60 * 24));
         const price = carData.pricePerDay * noOfDays;
 
-        // 1. Tạo Booking
+        // 3. Tạo Booking
         const newBooking = await Booking.create({
             car, 
             owner: carData.owner, 
@@ -79,7 +94,6 @@ export const createBooking = async (req, res) => {
             isPaid: false
         });
 
-        
         res.json({ 
             success: true, 
             message: paymentMethod === 'VNPAY' 
@@ -87,7 +101,7 @@ export const createBooking = async (req, res) => {
                 : "Đặt xe thành công!" 
         });
     } catch (error) {
-        console.log(error.message);
+        console.error("Lỗi tạo booking:", error); // Dùng console.error để dễ debug
         res.json({ success: false, message: error.message });
     }
 }
@@ -116,7 +130,7 @@ export const getOwnerBookings = async (req, res) => {
         // Lấy danh sách booking và lấy kèm thông tin car + user
         const bookings = await Booking.find({ owner: req.user._id })
             .populate('car') 
-            .populate('user', 'name email address phone driverLicense') // CHỈ lấy các trường công khai của user
+            .populate('user', 'name email address phone driverLicense identifyCode') // CHỈ lấy các trường công khai của user
             .sort({ createdAt: -1 });
 
         res.json({ success: true, bookings });

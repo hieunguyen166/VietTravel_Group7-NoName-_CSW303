@@ -16,7 +16,7 @@ L.Marker.prototype.options.icon = L.icon({ iconUrl: markerIcon, shadowUrl: marke
 const CarDetails = () => {
 
   const {id} = useParams()
-  const {cars, axios, pickupDate, setPickupDate, returnDate, setReturnDate} = useAppContext()
+  const { cars, axios, pickupDate, setPickupDate, returnDate, setReturnDate, user } = useAppContext();
   const [car, setCar] = useState(null)
   const [carReviews, setCarReviews] = useState([]) 
   // 👈 CHỈ THÊM: State lưu trữ ngày đã bị book
@@ -275,9 +275,32 @@ useEffect(() => {
             </div>
         )}
 
-        <button className='w-full bg-[#115E59] hover:bg-[#0D9488] transition-all duration-300 py-3.5 font-bold text-sm text-white rounded-xl uppercase tracking-wider cursor-pointer shadow-lg mt-2'>
-          Đặt xe ngay
-        </button>
+        {/* Nút bấm Đặt xe hoặc Điều hướng */}
+<div className="mt-4">
+  {!user ? (
+    <button 
+      disabled 
+      className="w-full bg-gray-400 text-white py-3.5 rounded-xl font-bold cursor-not-allowed"
+    >
+      Vui lòng đăng nhập để đặt xe
+    </button>
+  ) : (driveType === 'self-drive' && (!user.identifyCode || !user.driverLicense)) ? (
+    <button 
+      type="button"
+      onClick={() => navigate('/profile')} 
+      className="w-full bg-red-500 hover:bg-red-600 transition-all text-white py-3.5 rounded-xl font-bold shadow-lg"
+    >
+      Cập nhật CCCD & GPLX để đặt xe
+    </button>
+  ) : (
+    <button 
+      type="submit" 
+      className="w-full bg-[#115E59] hover:bg-[#0D9488] transition-all duration-300 py-3.5 font-bold text-sm text-white rounded-xl uppercase tracking-wider shadow-lg"
+    >
+      Đặt xe ngay
+    </button>
+  )}
+</div>
 {/* Thông tin chủ xe */}
 <div className="bg-white rounded-xl border border-borderColor/60 p-5 shadow-sm mt-4">
   <h2 className='text-base font-bold text-gray-900 mb-4 border-l-4 border-[#115E59] pl-2.5'>Thông tin chủ xe</h2>

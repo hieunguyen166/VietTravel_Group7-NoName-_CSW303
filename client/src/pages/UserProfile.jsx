@@ -13,8 +13,10 @@ const UserProfile = () => {
   const [address, setAddress] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [gplxFile, setGplxFile] = useState(null);
+  const [cccdFile, setCccdFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const [gplxPreview, setGplxPreview] = useState('');
+  const [cccdPreview, setCccdPreview] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -25,6 +27,7 @@ const UserProfile = () => {
       setPhone(user.phone || '');
       setImagePreview(user.image || '');
       setGplxPreview(user.driverLicense || '');
+      setCccdPreview(user.identifyCode || '');
     }
   }, [user]);
 
@@ -44,6 +47,14 @@ const UserProfile = () => {
     }
   };
 
+    const handleCccdChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setCccdFile(file);
+      setCccdPreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -57,6 +68,7 @@ const UserProfile = () => {
 
     if (imageFile) formData.append('image', imageFile);
     if (gplxFile) formData.append('driverLicense', gplxFile);
+    if (cccdFile) formData.append('identifyCode', cccdFile);
 
     try {
         const { data } = await axios.put('/api/user/update-profile', formData);
@@ -167,6 +179,22 @@ const UserProfile = () => {
                 )}
               </label>
               <input type="file" id="gplx-input" accept="image/*" className="hidden" onChange={handleGplxChange} />
+            </div>
+
+            {/* CCCD */}
+            <div>
+              <label className="text-[11px] font-bold text-gray-400 uppercase block mb-1">Căn cước công dân (CCCD)</label>
+              <label htmlFor="cccd-input" className="block w-full aspect-[16/10] border border-dashed border-gray-300 rounded-xl overflow-hidden relative cursor-pointer hover:border-[#115E59] bg-gray-50 transition-all">
+                {cccdPreview ? (
+                  <img src={cccdPreview} alt="CCCD" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                    <span className="text-lg mb-0.5">🪪</span>
+                    <p className="text-[10px] text-gray-500 font-bold">Tải lên mặt trước CCCD</p>
+                  </div>
+                )}
+              </label>
+              <input type="file" id="cccd-input" accept="image/*" className="hidden" onChange={handleCccdChange} />
             </div>
 
             <button

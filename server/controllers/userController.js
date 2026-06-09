@@ -165,6 +165,14 @@ export const updateUserProfile = async (req, res) => {
                 });
                 user.driverLicense = response.url;
             }
+            if (req.files['identifyCode']?.[0]) {
+                const response = await imagekit.upload({
+                    file: req.files['identifyCode'][0].buffer.toString('base64'),
+                    fileName: req.files['identifyCode'][0].originalname,
+                    folder: '/users'
+                });
+                user.identifyCode = response.url;
+            }
         }
 
         await user.save(); 

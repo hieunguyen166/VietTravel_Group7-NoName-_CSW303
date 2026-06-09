@@ -50,6 +50,16 @@ const userSchema = new mongoose.Schema({
     driverLicense: {
         type: String,
         default: "" // Lưu đường dẫn URL ảnh Giấy phép lái xe sau khi tải lên
+    }, 
+
+    identifyCode: {
+        type: String,
+        default:""
+    },
+    
+    isVerified: { 
+        type: Boolean, 
+        default: false 
     }
 
 }, { timestamps: true });

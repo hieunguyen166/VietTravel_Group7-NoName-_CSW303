@@ -11,5 +11,5 @@ userRoutes.get('/data', protect, getUserData);
 userRoutes.get('/cars', getCars);
 // userRoutes.js
 // userRoutes.js
-userRoutes.put('/update-profile', protect, upload.fields([{ name: 'image' }, { name: 'driverLicense' }]), updateUserProfile);
+userRoutes.put('/update-profile', protect, upload.fields([{ name: 'image' }, { name: 'driverLicense' }, {name: 'identifyCode'}]), updateUserProfile);
 export default userRoutes;
