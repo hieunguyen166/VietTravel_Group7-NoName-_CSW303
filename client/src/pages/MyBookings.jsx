@@ -155,6 +155,19 @@ const MyBookings = () => {
                     </p>
                   </div>
                 </div>
+                
+                {/* Hiển thị Drive Type */}
+<div className='flex items-start gap-3'>
+    <div className="p-1.5 bg-[#115E59]/5 rounded-lg shrink-0 mt-0.5 border border-[#115E59]/10">
+        <img src={assets.car_icon} alt="Hình thức" className='w-4 h-4' /> 
+    </div>
+    <div>
+        <p className='text-xs font-bold text-gray-400 uppercase tracking-wide'>Hình thức thuê</p>
+        <p className='text-sm font-semibold text-gray-700 mt-0.5'>
+            {booking.driveType === 'with-driver' ? '👤 Có tài xế' : '🚗 Tự lái'}
+        </p>
+    </div>
+</div>
 
                 <div className='flex items-start gap-3'>
                   <div className="p-1.5 bg-[#115E59]/5 rounded-lg shrink-0 mt-0.5 border border-[#115E59]/10">

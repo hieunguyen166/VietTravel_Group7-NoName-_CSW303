@@ -88,12 +88,26 @@ export const getUserData = async (req, res) =>{
 // Get All Cars for the frontend
 export const getCars = async (req, res) => {
     try {
-
         await connectDB();
 
-        const cars = await Car.find({
-            isAvailable: true
-        }).populate('owner', 'name phone email');
+        // 1. Lấy các tham số tìm kiếm từ URL (Frontend gửi lên)
+        const { driveType, pickupLocation } = req.query;
+
+        // 2. Tạo đối tượng bộ lọc mặc định (Chỉ lấy xe đang rảnh)
+        let filter = { isAvailable: true };
+
+        // 3. Gắn thêm điều kiện lọc nếu Frontend có truyền lên
+        if (driveType) {
+            filter.driveType = driveType;
+        }
+        
+        if (pickupLocation) {
+            // Nếu dùng pickupLocation mapping với trường 'city' trong DB
+            filter.city = pickupLocation; 
+        }
+
+        // 4. Tìm xe theo bộ lọc đã tạo
+        const cars = await Car.find(filter).populate('owner', 'name phone email');
 
         res.json({
             success: true,
@@ -101,7 +115,6 @@ export const getCars = async (req, res) => {
         });
 
     } catch (error) {
-
         console.log(error);
 
         res.json({

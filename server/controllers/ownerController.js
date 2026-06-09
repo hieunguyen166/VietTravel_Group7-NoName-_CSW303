@@ -18,7 +18,7 @@ export const changeRoleToOwner = async (req, res) => {
 //API to list car
 
 export const addCar = async (req, res) => {
-    console.log("--- BẠN ĐANG CHẠY CODE PHIÊN BẢN ĐÃ SỬA LỖI BUFFER ---");
+    //console.log("Dữ liệu xe chuẩn bị lưu:", carData);
     try {
         const { _id } = req.user;
         const carData = JSON.parse(req.body.carData);
@@ -28,14 +28,14 @@ export const addCar = async (req, res) => {
             return res.json({ success: false, message: "Vui lòng chọn hình ảnh xe" });
         }
 
-        // 1. ✅ ĐÃ SỬA: Upload ảnh lên ImageKit bằng dữ liệu Buffer trực tiếp từ RAM (Bỏ fs.readFileSync)
+        // 1. Upload ảnh lên ImageKit bằng dữ liệu Buffer trực tiếp từ RAM
         const response = await imagekit.upload({
-            file: imageFile.buffer.toString('base64'), // Chuyển buffer sang dạng chuỗi base64
+            file: imageFile.buffer.toString('base64'),
             fileName: imageFile.originalname,
             folder: '/cars'
         });
 
-        // 2. Tạo biến optimizedImageUrl ngay tại đây (cùng phạm vi)
+        // 2. Tạo biến optimizedImageUrl ngay tại đây
         const optimizedImageUrl = imagekit.url({
             path: response.filePath,
             transformation: [
@@ -62,7 +62,11 @@ export const addCar = async (req, res) => {
             lat: carData.lat,
             lng: carData.lng,
             isAvailable: true,
-            city: carData.city 
+            city: carData.city,
+            // ✅ ĐÃ THÊM: Lấy giá trị driveType từ FE gửi lên (mặc định là self-drive nếu trống)
+driveTypes: carData.driveTypes && carData.driveTypes.length > 0 
+        ? carData.driveTypes 
+        : ['self-drive']
         });
 
         res.json({ success: true, message: "Xe đã được thêm thành công", car: newCar });
@@ -259,3 +263,22 @@ export const getOwnerProfile = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 };
+
+export const toggleDriveType = async (req, res) => {
+    const { carId } = req.body;
+    const car = await Car.findById(carId);
+    
+    // Logic xoay vòng đơn giản
+    let newTypes = [];
+    if (car.driveTypes.includes('self-drive') && car.driveTypes.includes('with-driver')) {
+        newTypes = ['self-drive']; // Đang cả hai -> Về tự lái
+    } else if (car.driveTypes.includes('self-drive')) {
+        newTypes = ['with-driver']; // Đang tự lái -> Sang có tài xế
+    } else {
+        newTypes = ['self-drive', 'with-driver']; // Đang có tài xế -> Sang cả hai
+    }
+
+    car.driveTypes = newTypes;
+    await car.save();
+    res.json({ success: true, message: "Đã cập nhật hình thức thuê!" });
+}

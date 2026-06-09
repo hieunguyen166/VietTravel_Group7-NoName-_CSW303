@@ -5,6 +5,11 @@ const bookingSchema = new mongoose.Schema({
     car: { type: ObjectId, ref: "Car", required: true },
     user: { type: ObjectId, ref: "User", required: true },
     owner: { type: ObjectId, ref: "User", required: true },
+    driveType: { 
+        type: String, 
+        enum: ["self-drive", "with-driver"], 
+        required: true 
+    },
     pickupDate: { type: Date, required: true },
     returnDate: { type: Date, required: true },
     status: { 

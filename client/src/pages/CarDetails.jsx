@@ -28,7 +28,7 @@ const CarDetails = () => {
   const [paymentMethod, setPaymentMethod] = useState('Cash');
   const [qrCode, setQrCode] = useState(null);
   const [ownerDetails, setOwnerDetails] = useState(null);
-
+  const [driveType, setDriveType] = useState('self-drive');
   // 👈 CHỈ THÊM: Hàm logic kiểm tra ngày
   const isDateBooked = (dateStr) => {
     return bookedDates.some(range => {
@@ -61,7 +61,7 @@ const CarDetails = () => {
         car: id,
         pickupDate,
         returnDate,
-        paymentMethod
+        paymentMethod, driveType
       })
       if(data.success) {
         toast.success("Đặt xe thành công!")
@@ -212,7 +212,30 @@ useEffect(() => {
         </div>
 
         <hr className='border-borderColor my-4'/>
-
+            {/* Phần chọn hình thức lái */}
+<div className="space-y-3 pt-2">
+    <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">Hình thức thuê</p>
+    <div className="flex gap-4">
+        {car.driveTypes.includes('self-drive') && (
+            <button 
+                type="button" 
+                onClick={() => setDriveType('self-drive')} 
+                className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${driveType === 'self-drive' ? 'border-[#115E59] bg-teal-50 text-[#115E59]' : 'border-gray-200'}`}
+            >
+                🚗 Tự lái
+            </button>
+        )}
+        {car.driveTypes.includes('with-driver') && (
+            <button 
+                type="button" 
+                onClick={() => setDriveType('with-driver')} 
+                className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${driveType === 'with-driver' ? 'border-[#115E59] bg-teal-50 text-[#115E59]' : 'border-gray-200'}`}
+            >
+                👤 Có tài xế
+            </button>
+        )}
+    </div>
+</div>
         <div className='flex flex-col gap-1.5'>
           <label className="text-xs font-bold text-gray-700 uppercase tracking-wide">Ngày nhận xe</label>
           <input 

@@ -42,15 +42,20 @@ export const checkAvailabilityOfCar = async (req, res)=>{
 export const createBooking = async (req, res) => {
     try {
         const { _id } = req.user;
-        // Thêm paymentMethod từ req.body
-        const { car, pickupDate, returnDate, paymentMethod } = req.body;
+        // ✅ THÊM driveType vào đây để lấy lựa chọn của người dùng
+        const { car, pickupDate, returnDate, paymentMethod, driveType } = req.body;
 
         const isAvailable = await checkAvailability(car, pickupDate, returnDate);
         if (!isAvailable) {
-            return res.json({ success: false, message: "Xe đã được đặt trong khoảng thời gian này. Vui lòng chọn ngày khác hoặc xe khác." });
+            return res.json({ success: false, message: "Xe đã được đặt trong khoảng thời gian này." });
         }
 
         const carData = await Car.findById(car);
+
+        // ✅ Kiểm tra tính hợp lệ của hình thức thuê
+        if (!carData.driveTypes.includes(driveType)) {
+            return res.json({ success: false, message: "Hình thức thuê này không khả dụng cho xe này." });
+        }
         
         if (!carData || !carData.owner) {
             return res.json({ success: false, message: "Thông tin chủ xe không tồn tại." });
@@ -61,7 +66,6 @@ export const createBooking = async (req, res) => {
         const noOfDays = Math.ceil((returned - picked) / (1000 * 60 * 60 * 24));
         const price = carData.pricePerDay * noOfDays;
 
-        // Lưu đơn hàng với trạng thái tương ứng
         await Booking.create({
             car, 
             owner: carData.owner, 
@@ -69,8 +73,9 @@ export const createBooking = async (req, res) => {
             pickupDate, 
             returnDate, 
             price,
-            paymentMethod: paymentMethod || 'Cash', // Mặc định là Cash nếu không gửi lên
-            // Nếu là VNPAY thì chờ thanh toán, nếu là Cash thì chờ xác nhận của chủ xe
+            paymentMethod: paymentMethod || 'Cash',
+            // ✅ SỬA ĐÂY: Lưu driveType khách hàng đã chọn vào đơn hàng
+            driveType: driveType, 
             status: paymentMethod === 'VNPAY' ? 'Chờ thanh toán' : 'Đang chờ xác nhận',
             isPaid: false
         });
@@ -79,7 +84,7 @@ export const createBooking = async (req, res) => {
             success: true, 
             message: paymentMethod === 'VNPAY' 
                 ? "Đơn hàng đã được tạo. Vui lòng hoàn tất thanh toán!" 
-                : "Đặt xe thành công! Bạn có thể xem chi tiết trong mục 'Đơn hàng của tôi'." 
+                : "Đặt xe thành công!" 
         });
     } catch (error) {
         console.log(error.message);

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { assets, cityList } from '../../assets/assets'; // 🛠️ Đã thêm import cityList ở đây
+import { assets, cityList } from '../../assets/assets';
 import Title from '../../components/owner/Title';
 import { useAppContext } from '../../context/AppContext';
 
-// 🛠️ IMPORT LEAFLET
+// IMPORT LEAFLET
 import L from 'leaflet';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -24,18 +24,24 @@ const LocationPicker = ({ car, setCar }) => {
 const AddCar = () => {
   const { axios, currency } = useAppContext();
   const [image, setImage] = useState(null);
-  const [car, setCar] = useState({
+const [car, setCar] = useState({
     brand: '', model: '', year: 0, pricePerDay: 0, category: '', 
     transmission: '', fuel_type: '', seating_capacity: 0, location: '', 
-    city: '', // Điểm lưu dữ liệu Tỉnh/Thành phố
+    city: '', 
     lat: 0, lng: 0, description: '',
-  });
+    // ĐỔI TÊN THÀNH driveTypes (số nhiều)
+    driveTypes: [] 
+});
 
   const [isLoading, setIsLoading] = useState(false);
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
     if(isLoading) return null;
+    if(car.driveTypes.length === 0) { 
+        toast.error("Vui lòng chọn ít nhất 1 hình thức thuê!"); 
+        return; 
+    }
     if(car.city === '') { toast.error("Vui lòng chọn Tỉnh/Thành phố!"); return; }
     if(car.lat === 0 || car.lng === 0) { toast.error("Vui lòng nhấp chọn vị trí trên bản đồ!"); return; }
 
@@ -44,11 +50,18 @@ const AddCar = () => {
       const formData = new FormData();
       formData.append('image', image);
       formData.append('carData', JSON.stringify(car));
+      
       const { data } = await axios.post('/api/owner/add-car', formData);
       if(data.success){
-          toast.success(data.message);
-          setImage(null);
-          setCar({ brand: '', model: '', year: 0, pricePerDay: 0, category: '', transmission: '', fuel_type: '', seating_capacity: 0, location: '', city: '', lat: 0, lng: 0, description: '' });
+    toast.success(data.message);
+    setImage(null);
+    setCar({ 
+        brand: '', model: '', year: 0, pricePerDay: 0, category: '', 
+        transmission: '', fuel_type: '', seating_capacity: 0, location: '', 
+        city: '', lat: 0, lng: 0, description: '', 
+        driveTypes: [] // Phải reset đúng tên này
+    });
+
       } else {
           toast.error(data.message);
       }
@@ -69,6 +82,42 @@ const AddCar = () => {
             </label>
             <p className='text-xs md:text-sm text-gray-400 font-medium'>Tải lên hình ảnh thực tế của xe (Định dạng JPG, PNG)</p>
         </div>
+
+        {/* ✅ Cập nhật: Khối chọn nhiều hình thức cho thuê */}
+<div className='flex flex-col w-full p-4 border border-gray-200 rounded-xl bg-white shadow-sm'>
+    <label className="font-bold text-gray-800 mb-3 text-base">Hình thức cho thuê (Có thể chọn nhiều)</label>
+    <div className="flex items-center gap-8">
+        <label className="flex items-center gap-2.5 cursor-pointer group">
+            <input 
+                type="checkbox" 
+                checked={car.driveTypes.includes('self-drive')} 
+                onChange={e => {
+                    const types = e.target.checked 
+                        ? [...car.driveTypes, 'self-drive'] 
+                        : car.driveTypes.filter(t => t !== 'self-drive');
+                    setCar({...car, driveTypes: types});
+                }}
+                className="w-5 h-5 accent-[#115E59] cursor-pointer" 
+            />
+            <span className="font-bold text-gray-600 group-hover:text-[#115E59]">Xe tự lái</span>
+        </label>
+        
+        <label className="flex items-center gap-2.5 cursor-pointer group">
+            <input 
+                type="checkbox" 
+                checked={car.driveTypes.includes('with-driver')} 
+                onChange={e => {
+                    const types = e.target.checked 
+                        ? [...car.driveTypes, 'with-driver'] 
+                        : car.driveTypes.filter(t => t !== 'with-driver');
+                    setCar({...car, driveTypes: types});
+                }}
+                className="w-5 h-5 accent-[#115E59] cursor-pointer" 
+            />
+            <span className="font-bold text-gray-600 group-hover:text-[#115E59]">Xe có tài xế</span>
+        </label>
+    </div>
+</div>
 
         {/* Hãng xe & Dòng xe */}
         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
@@ -128,11 +177,10 @@ const AddCar = () => {
           </div>
         </div>
 
-        {/* 🛠️ LOCATION: Nhập tay + Chọn Tỉnh/Thành + Chọn bản đồ */}
+        {/* LOCATION: Nhập tay + Chọn Tỉnh/Thành + Chọn bản đồ */}
         <div className='flex flex-col w-full gap-3'>
           <label className="font-bold text-gray-800">Địa chỉ & Vị trí trên bản đồ</label>
           
-          {/* Ô chọn Tỉnh/Thành phố đổ dữ liệu tự động từ cityList */}
           <select 
             value={car.city}
             onChange={e => setCar({...car, city: e.target.value})} 
@@ -145,7 +193,6 @@ const AddCar = () => {
             ))}
           </select>
 
-          {/* Ô nhập địa chỉ chi tiết */}
           <input 
             type="text" 
             placeholder="Nhập địa chỉ chi tiết (VD: 123 Đường 3/2, Q. Ninh Kiều...)" 
@@ -155,7 +202,6 @@ const AddCar = () => {
             onChange={e => setCar({...car, location: e.target.value})}
           />
           
-          {/* Bản đồ Leaflet */}
           <div className="h-64 w-full border rounded-lg overflow-hidden">
             <MapContainer center={[10.0452, 105.7469]} zoom={13} style={{ height: "100%", width: "100%" }}>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />

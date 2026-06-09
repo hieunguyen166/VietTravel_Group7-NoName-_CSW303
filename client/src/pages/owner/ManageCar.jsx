@@ -72,7 +72,19 @@ const isCarReady = cars.isAvailable === true ||
             fetchOwnerCars()
         }
     }, [isOwner])
-
+    const toggleDriveType = async (carId) => {
+        try {
+            const { data } = await axios.post('/api/owner/toggle-drive-type', { carId });
+            if (data.success) {
+                toast.success(data.message);
+                fetchOwnerCars();
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
     return (
         <div className='px-4 pt-10 md:px-10 w-full font-bevietnam antialiased'>
             <Title title="Quản Lý Danh Sách Xe" subTitle="Xem toàn bộ danh sách xe bạn đang sở hữu, cập nhật thông tin chi tiết hoặc tạm ẩn khỏi nền tảng đặt xe." />
@@ -82,6 +94,7 @@ const isCarReady = cars.isAvailable === true ||
                     <thead className='text-gray-400 bg-gray-50/70 text-xs uppercase tracking-wider border-b border-borderColor'>
                         <tr>
                             <th className="p-3.5 font-bold">Phương tiện</th>
+                            <th className="p-3.5 font-bold">Hình thức</th>
                             <th className="p-3.5 font-bold max-md:hidden">Phân khúc</th>
                             <th className="p-3.5 font-bold">Giá thuê</th>
                             <th className="p-3.5 font-bold max-md:hidden">Trạng thái</th>
@@ -106,7 +119,34 @@ const isCarReady = cars.isAvailable === true ||
                                             </span>
                                         </div>
                                     </td>
-                                    
+                                    {/* Cột mới: Hình thức thuê */}
+<td className='p-3.5'>
+    <div className="flex flex-col items-start gap-1.5">
+        {/* Badge hình thức: Hiển thị tất cả các giá trị trong mảng */}
+        <div className="flex flex-wrap gap-1">
+            {car.driveTypes && car.driveTypes.map((type, idx) => (
+                <span key={idx} className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${
+                    type === 'self-drive' 
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                    : 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                }`}>
+                    {type === 'self-drive' ? '🚗 Tự lái' : '👤 Có tài xế'}
+                </span>
+            ))}
+        </div>
+        
+        {/* Nút Đổi: Giữ nguyên hoặc tùy chỉnh lại nếu cần */}
+        <button 
+            onClick={() => toggleDriveType(car._id)}
+            className='group flex items-center gap-1 text-[10px] font-semibold text-gray-400 hover:text-teal-600 transition-colors uppercase tracking-tight'
+        >
+            <svg className="w-3 h-3 group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Thay đổi
+        </button>
+    </div>
+</td>
                                     {/* Cột Phân khúc xe (Desktop) */}
                                     <td className='p-3.5 max-md:hidden font-medium text-gray-500'>{car.category}</td>
                                     

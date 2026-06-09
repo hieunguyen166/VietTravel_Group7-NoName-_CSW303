@@ -18,6 +18,11 @@ const carSchema = new mongoose.Schema({
     lng: { type: Number, required: true }, 
     isAvailable: { type: Boolean, default: true },
     city: { type: String, required: true },
+driveTypes: {
+        type: [String], // Hoặc Array
+        required: true,
+        default: ['self-drive']
+},
 }, { timestamps: true });
 
 const Car = mongoose.model('Car', carSchema);
