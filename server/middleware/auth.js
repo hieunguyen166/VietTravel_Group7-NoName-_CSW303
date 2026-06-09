@@ -40,3 +40,12 @@ export const protect = async (req, res, next) => {
         return res.json({ success: false, message: "not authorized" });
     }
 };
+// Thêm vào file auth.js hoặc tạo file middleware mới
+export const adminOnly = (req, res, next) => {
+    // Kiểm tra nếu req.user đã tồn tại và role là 'admin'
+    if (req.user && req.user.role === 'admin') {
+        next(); // Tiếp tục thực hiện Controller
+    } else {
+        return res.status(403).json({ success: false, message: "Bạn không có quyền truy cập (Admin only)" });
+    }
+};

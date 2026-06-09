@@ -83,6 +83,16 @@ const Navbar = () => {
                     >
                         {isOwner ? 'Dashboard' : 'Danh sách xe' }
                     </button>
+
+                    {/* 🆕 CHÈN NÚT ADMIN VÀO ĐÂY */}
+                    {user?.role === 'admin' && (
+                        <button 
+                            onClick={() => navigate('/admin-dashboard')} 
+                            className="cursor-pointer font-mplus font-bold text-[15px] text-[#115E59] hover:text-[#0D9488] transition-colors duration-300 tracking-tight underline underline-offset-4"
+                        >
+                            Admin
+                        </button>
+                    )}
                     
                     {/* 🆕 KHU VỰC ĐÃ ĐƯỢC TÁCH BIỆT LOGIC ĐĂNG NHẬP / THÔNG TIN CÁ NHÂN */}
                     {user ? (

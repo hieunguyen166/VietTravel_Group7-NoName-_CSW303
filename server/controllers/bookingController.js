@@ -1,5 +1,6 @@
 import Booking from "../models/booking.js";
 import Car from "../models/Car.js";
+import Order from "../models/Order.js";
 
 // Function to Check Availability of Car for a given Date
 const checkAvailability = async (car, pickupDate, returnDate)=>{
@@ -42,7 +43,6 @@ export const checkAvailabilityOfCar = async (req, res)=>{
 export const createBooking = async (req, res) => {
     try {
         const { _id } = req.user;
-        // ✅ THÊM driveType vào đây để lấy lựa chọn của người dùng
         const { car, pickupDate, returnDate, paymentMethod, driveType } = req.body;
 
         const isAvailable = await checkAvailability(car, pickupDate, returnDate);
@@ -52,7 +52,6 @@ export const createBooking = async (req, res) => {
 
         const carData = await Car.findById(car);
 
-        // ✅ Kiểm tra tính hợp lệ của hình thức thuê
         if (!carData.driveTypes.includes(driveType)) {
             return res.json({ success: false, message: "Hình thức thuê này không khả dụng cho xe này." });
         }
@@ -66,7 +65,8 @@ export const createBooking = async (req, res) => {
         const noOfDays = Math.ceil((returned - picked) / (1000 * 60 * 60 * 24));
         const price = carData.pricePerDay * noOfDays;
 
-        await Booking.create({
+        // 1. Tạo Booking
+        const newBooking = await Booking.create({
             car, 
             owner: carData.owner, 
             user: _id, 
@@ -74,12 +74,12 @@ export const createBooking = async (req, res) => {
             returnDate, 
             price,
             paymentMethod: paymentMethod || 'Cash',
-            // ✅ SỬA ĐÂY: Lưu driveType khách hàng đã chọn vào đơn hàng
             driveType: driveType, 
             status: paymentMethod === 'VNPAY' ? 'Chờ thanh toán' : 'Đang chờ xác nhận',
             isPaid: false
         });
 
+        
         res.json({ 
             success: true, 
             message: paymentMethod === 'VNPAY' 
@@ -127,24 +127,42 @@ export const getOwnerBookings = async (req, res) => {
 }
 
 // API to change booking status by owner
-export const changeBookingStatus = async (req, res)=>{
+export const changeBookingStatus = async (req, res) => {
     try {
-        const {_id} = req.user;
-        const {bookingId, status} = req.body
+        const { _id } = req.user;
+        const { bookingId, status } = req.body;
 
-        const booking = await Booking.findById(bookingId)
+        const booking = await Booking.findById(bookingId).populate('car'); // Cần populate car để lấy giá
+        if (!booking) return res.json({ success: false, message: "Booking không tồn tại" });
 
-        if(booking.owner.toString() !== _id.toString()){
-            return res.json({ success: false, message: "Không có quyền truy cập" })
+        if (booking.owner.toString() !== _id.toString()) {
+            return res.json({ success: false, message: "Không có quyền truy cập" });
         }
 
+        // Cập nhật trạng thái
         booking.status = status;
         await booking.save();
-        res.json({success: true, message: "Trạng thái đã được cập nhật thành công"})
 
+        // 🚀 NẾU ĐƯỢC XÁC NHẬN -> MỚI TẠO ORDER
+        if (status === 'Đã xác nhận') {
+            const adminCommission = booking.price * 0.05;
+            const ownerAmount = booking.price * 0.95;
+
+            await Order.create({
+                bookingId: booking._id,
+                userId: booking.user,
+                carId: booking.car._id,
+                totalAmount: booking.price,
+                adminCommission: adminCommission,
+                ownerAmount: ownerAmount,
+                paymentStatus: 'paid' // Hoặc trạng thái thu tiền thực tế
+            });
+        }
+
+        res.json({ success: true, message: "Trạng thái đã được cập nhật thành công và hoa hồng đã được ghi nhận!" });
     } catch (error) {
         console.log(error.message);
-        res.json({success: false, message: error.message})
+        res.json({ success: false, message: error.message });
     }
 }
 

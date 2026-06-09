@@ -11,7 +11,7 @@ export const AppProvider = ({ children })=>{
 
     const navigate = useNavigate()
     const currency = import.meta.env.VITE_CURRENCY
-
+    const backendUrl = import.meta.env.VITE_BASE_URL;
     // FIX 1: Lấy thẳng token từ localStorage lúc khởi tạo state để tránh bất đồng bộ
     const [token, setToken] = useState(localStorage.getItem('token') || null)
     const [user, setUser] = useState(null)
@@ -47,6 +47,15 @@ export const AppProvider = ({ children })=>{
         }
     }
 
+        const login = (userData, token) => {
+        localStorage.setItem('token', token);
+        setToken(token);
+        setUser(userData);
+        setIsOwner(userData.role === 'owner');
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        setShowLogin(false); // Đóng modal login
+    };
+
     //Function to log out the user
     const logout = ()=>{
         localStorage.removeItem('token')
@@ -73,7 +82,7 @@ export const AppProvider = ({ children })=>{
     },[token])
 
     const value = {
-        navigate, currency, axios, user, setUser, token, setToken, isOwner, setIsOwner, fetchUser, showLogin, setShowLogin, logout, fetchCars, cars, setCars, pickupDate, setPickupDate, returnDate, setReturnDate
+        backendUrl, navigate, currency, axios, user, setUser, token, setToken, isOwner, setIsOwner, fetchUser, showLogin, setShowLogin, logout, fetchCars, cars, setCars, pickupDate, setPickupDate, returnDate, setReturnDate, login
     }
 
     return (

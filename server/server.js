@@ -4,6 +4,7 @@ import express from 'express';
 import fs from 'fs';
 import mongoose from "mongoose";
 import connectDB from './configs/db.js';
+import adminRouter from './routes/adminRoutes.js';
 import bookingRouter from './routes/bookingRoutes.js';
 import ownerRoutes from './routes/ownerRoute.js';
 import reviewRoutes from './routes/reviewRoutes.js';
@@ -32,6 +33,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/owner', ownerRoutes);
 app.use('/api/bookings', bookingRouter);
 app.use('/api/review', reviewRoutes);
+app.use('/api/admin', adminRouter)
 
 // 🎁 THÊM ROUTE TEST: Giúp bạn truy cập trực tiếp vào link Vercel BE để check xem BE đã sống chưa
 app.get('/', (req, res) => {

@@ -32,6 +32,12 @@ import logo from "./logo.svg";
 import logo1 from "./logo1.png";
 import logo2 from "./logo2.png";
 import main_car from "./main_car.png";
+import mainpage1 from "./mainpage1.jpg";
+import mainpage2 from "./mainpage2.jpg";
+import mainpage3 from "./mainpage3.jpg";
+import mainpage4 from "./mainpage4.jpg";
+import mainpage5 from "./mainpage5.jpg";
+import mainpage6 from "./mainpage6.jpg";
 import menu_icon from "./menu_icon.svg";
 import search_icon from "./search_icon.svg";
 import shikimori from "./shikimori.jpg";
@@ -44,7 +50,6 @@ import upload_icon from "./upload_icon.svg";
 import user_profile from "./user_profile.png";
 import users_icon from "./users_icon.svg";
 import vf from "./vf.png";
-
 export const cityList = ['TP HCM', 'Bình Dương', 'Vũng Tàu', 'Tây Ninh', 'Đồng Nai', 'Long An', 'Cần Thơ', 'Hà Nội', 'Đà Nẵng', 'Hải Phòng', 'Quảng Ninh', 'Huế', 'Nha Trang', 'Phú Quốc'];
 
 export const assets = {
@@ -94,7 +99,22 @@ export const assets = {
     logo1,
     logo2,
     shikimori,
+    mainpage1,
+    mainpage2,
+    mainpage3,
+    mainpage4,
+    mainpage5,
+    mainpage6
 }
+
+export const heroBackgrounds = [
+    mainpage1, 
+    mainpage2, 
+    mainpage3, 
+    mainpage4, 
+    mainpage5, 
+    mainpage6
+];
 
 export const menuLinks = [
     { name: "Home", path: "/" },
@@ -108,6 +128,7 @@ export const ownerMenuLinks = [
     { name: "Manage Cars", path: "/owner/manage-cars", icon: carIcon, coloredIcon: carIconColored },
     { name: "Manage Bookings", path: "/owner/manage-bookings", icon: listIcon, coloredIcon: listIconColored },
 ]
+
 
 export const dummyUserData = {
   "_id": "6847f7cab3d8daecdb517095",

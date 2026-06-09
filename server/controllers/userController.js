@@ -67,7 +67,11 @@ export const loginUser = async (req, res)=>{
             return res.json({success: false, message: "Invalid Credentials" })
         }
         const token = generateToken(user._id.toString())
-        res.json({success: true, token})
+        res.json({success: true, token, user: {
+                id: user._id,
+                name: user.name, // tùy vào schema của bạn
+                role: user.role // Thêm dòng này!
+            }})
     } catch (error) {
         console.log(error.message);
         res.json({success: false, message: error.message})

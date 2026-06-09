@@ -3,31 +3,32 @@ import toast from 'react-hot-toast';
 import { useAppContext } from '../context/AppContext';
 
 const Login = () => {
-
-    const {setShowLogin, axios, setToken, navigate} = useAppContext()
+    // 1. Lấy hàm login từ Context
+    const { setShowLogin, axios, login, navigate } = useAppContext();
 
     const [state, setState] = React.useState("login");
     const [name, setName] = React.useState("");
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
 
-    const onSubmitHandler = async (event)=>{
+    const onSubmitHandler = async (event) => {
         try {
             event.preventDefault();
-            const { data } = await axios.post(`/api/user/${state}`, { name,
-            email, password })
+            // Gọi API đăng nhập/đăng ký
+            const { data } = await axios.post(`/api/user/${state}`, { name, email, password });
 
             if (data.success) {
-                navigate('/')
-                setToken(data.token)
-                localStorage.setItem('token', data.token)
-                setShowLogin(false)
-            }else{
-                toast.error(data.message)
+                // 2. Thay vì set state rời rạc, gọi hàm login tập trung
+                // Truyền vào data.user và data.token mà Backend trả về
+                login(data.user, data.token);
+                
+                toast.success(state === "login" ? "Đăng nhập thành công" : "Đăng ký thành công");
+                navigate('/'); // Điều hướng về trang chủ
+            } else {
+                toast.error(data.message);
             }
-
         } catch (error) {
-            toast.error(error.message)
+            toast.error(error.message);
         }
     }
 
