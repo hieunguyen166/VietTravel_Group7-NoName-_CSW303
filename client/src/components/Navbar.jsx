@@ -76,13 +76,15 @@ const Navbar = () => {
                 </div>
             
                 <div className='flex max-sm:flex-col items-start sm:items-center gap-6 max-sm:w-full'>
-                    {/* Bảng điều khiển đối tác xe */}
-                    <button 
-                        onClick={() => isOwner ? navigate('/owner') : changeRole()}
-                        className="cursor-pointer font-mplus font-bold text-[15px] text-gray-700 hover:text-[#115E59] transition-colors duration-300 tracking-tight"
-                    >
-                        {isOwner ? 'Dashboard' : 'Danh sách xe' }
-                    </button>
+                    {/* Bảng điều khiển đối tác xe - SỬA TẠI ĐÂY: Ẩn hoàn toàn nếu user là admin */}
+                    {user?.role !== 'admin' && (
+                        <button 
+                            onClick={() => isOwner ? navigate('/owner') : changeRole()}
+                            className="cursor-pointer font-mplus font-bold text-[15px] text-gray-700 hover:text-[#115E59] transition-colors duration-300 tracking-tight"
+                        >
+                            {isOwner ? 'Dashboard' : 'Danh sách xe' }
+                        </button>
+                    )}
 
                     {/* 🆕 CHÈN NÚT ADMIN VÀO ĐÂY */}
                     {user?.role === 'admin' && (
